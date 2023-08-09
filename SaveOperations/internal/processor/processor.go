@@ -1,18 +1,27 @@
 package processor
 
 import (
+	"encoding/json"
 	"fmt"
-	"log"
 
 	"github.com/aws/aws-lambda-go/events"
 
+	"github.com/HELL0ANTHONY/aws-lambdas-with-golang/SaveOperations/pkg/models"
 	"github.com/HELL0ANTHONY/aws-lambdas-with-golang/SaveOperations/pkg/utils"
 )
 
-type Processor struct{}
+type Repository interface {
+	Save(operations *[]models.Operation, email *string) error
+}
 
-func New() Processor {
-	return Processor{}
+type Processor struct {
+	r Repository
+}
+
+func New(r Repository) Processor {
+	return Processor{
+		r,
+	}
 }
 
 func (p Processor) Process(e events.APIGatewayProxyRequest) error {
@@ -20,7 +29,11 @@ func (p Processor) Process(e events.APIGatewayProxyRequest) error {
 	if err != nil {
 		return fmt.Errorf("an error occurred while trying to decode the token: %w", err)
 	}
-	log.Println("email", *email)
 
-	return nil
+	request := models.Request{}
+	if err := json.Unmarshal([]byte(e.Body), &request); err != nil {
+		return fmt.Errorf("an error has occurred while trying to unmarshal the request: %w", err)
+	}
+
+	return p.r.Save(&request.Data, email)
 }
