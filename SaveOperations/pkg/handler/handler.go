@@ -9,7 +9,6 @@ import (
 	"github.com/aws/aws-lambda-go/lambdacontext"
 
 	"github.com/HELL0ANTHONY/aws-lambdas-with-golang/SaveOperations/pkg/models"
-	"github.com/HELL0ANTHONY/aws-lambdas-with-golang/SaveOperations/pkg/utils"
 )
 
 type Processor interface {
@@ -41,10 +40,10 @@ func (h Handler) Handle(
 
 	const message = "Successful Operation"
 	return events.APIGatewayProxyResponse{
-		Headers:    utils.CORSHeaders("*"),
+		Headers:    models.CORSHeaders("*"),
 		StatusCode: http.StatusCreated,
 		Body: string(
-			fmt.Sprintf(`{"message": %q, "operation_id": %q}`, message, id),
+			fmt.Sprintf(`{"message": %q}`, message),
 		),
 	}, nil
 }
