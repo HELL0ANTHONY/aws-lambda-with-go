@@ -11,7 +11,7 @@ import (
 )
 
 type Repository interface {
-	Save(operations *[]models.Operation, email *string) error
+	Save(*[]models.Operation, *string) error
 }
 
 type Processor struct {

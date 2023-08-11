@@ -1,13 +1,23 @@
 package repository
 
 import (
-	"log"
+	"fmt"
+	"os"
+	"sync"
 
+	"github.com/aws/aws-sdk-go/aws"
 	"github.com/aws/aws-sdk-go/aws/session"
 	"github.com/aws/aws-sdk-go/service/dynamodb"
+	"github.com/aws/aws-sdk-go/service/dynamodb/dynamodbattribute"
 
 	"github.com/HELL0ANTHONY/aws-lambdas-with-golang/SaveOperations/pkg/models"
+	"github.com/HELL0ANTHONY/aws-lambdas-with-golang/SaveOperations/pkg/utils"
 )
+
+type Transaction interface {
+	Save(*[]models.Operation, *string) error
+	WriteItems(*[]models.Record, *sync.WaitGroup, chan error)
+}
 
 type Repository struct {
 	svc *dynamodb.DynamoDB
@@ -21,9 +31,76 @@ func New() Repository {
 	return Repository{svc}
 }
 
-// Probar enviando *[]models.operations{} (vacío)
+func (r Repository) WriteItems(
+	operations *[]models.Record,
+	wg *sync.WaitGroup,
+	errCh chan error,
+) {
+	defer wg.Done()
+	const env = "TABLE_NAME"
+	tableName, exists := os.LookupEnv(env)
+	if !exists || tableName == "" {
+		errCh <- fmt.Errorf("%q is not configured correctly", env)
+		return
+	}
+	transacItems := []*dynamodb.TransactWriteItem{}
+	for _, op := range *operations {
+		operation, err := dynamodbattribute.MarshalMap(op)
+		if err != nil {
+			errCh <- err
+			return
+		}
+		transacItems = append(transacItems, &dynamodb.TransactWriteItem{
+			Put: &dynamodb.Put{
+				TableName: aws.String(tableName),
+				Item:      operation,
+			},
+		})
+	}
+	transaction := &dynamodb.TransactWriteItemsInput{TransactItems: transacItems}
+	if err := transaction.Validate(); err != nil {
+		errCh <- err
+		return
+	}
+	_, err := r.svc.TransactWriteItems(transaction)
+	errCh <- err
+}
+
 func (r Repository) Save(operations *[]models.Operation, email *string) error {
-	log.Println("email", *email)
-	log.Println("operations", operations)
-	return nil
+	record, err := utils.AddMetadata(operations, email)
+	if err != nil {
+		return fmt.Errorf("an error has occurred while trying to add the metadata: %w", err)
+	}
+
+	const (
+		chunkSize        = 20
+		concurrencyLimit = 5
+	)
+
+	var wg sync.WaitGroup
+	opsChunk := utils.Chunk(record, chunkSize)
+	errCh := make(chan error, len(opsChunk))
+	r.WriteItems(&record, &wg, errCh)
+	flag := make(chan struct{}, concurrencyLimit)
+
+	for _, ops := range opsChunk {
+		flag <- struct{}{}
+		wg.Add(1)
+		go func(ops []models.Record) {
+			defer func() {
+				<-flag
+				wg.Done()
+			}()
+			r.WriteItems(&ops, &wg, errCh)
+		}(ops)
+	}
+	wg.Wait()
+	close(errCh)
+
+	for e := range errCh {
+		if e != nil && err == nil {
+			err = e
+		}
+	}
+	return err
 }
