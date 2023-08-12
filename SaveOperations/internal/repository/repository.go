@@ -78,10 +78,10 @@ func (r Repository) Save(operations *[]models.Operation, email *string) error {
 	}
 
 	const chunkSize = 20
-	var wg sync.WaitGroup
 	opsChunk := utils.Chunk(record, chunkSize)
-	errCh := make(chan error, len(opsChunk))
 
+	var wg sync.WaitGroup
+	errCh := make(chan error, len(opsChunk))
 	for _, ops := range opsChunk {
 		r.semaphore <- struct{}{}
 		wg.Add(1)

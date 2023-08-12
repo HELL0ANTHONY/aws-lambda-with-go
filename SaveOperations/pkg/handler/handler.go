@@ -32,6 +32,7 @@ func (h Handler) Handle(
 	lc, _ := lambdacontext.FromContext(ctx)
 	var id string = lc.AwsRequestID
 	if err := h.p.Process(e); err != nil {
+		// log.Printf("<start> <Handler> Received request with [%v]", req.QueryStringParameters)
 		return models.ResponseError(
 			fmt.Sprintf("it was not possible to store the data sent: %s", err.Error()),
 			id,

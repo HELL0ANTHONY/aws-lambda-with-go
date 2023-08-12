@@ -31,13 +31,13 @@ func AddMetadata(operations *[]models.Operation, email *string) ([]models.Record
 
 		op.InternalNumber = "WS" + strconv.Itoa(nano)
 		record := models.Record{
-			UUID:            uuid,
-			OperationStatus: "pendiente",
-			Operation:       op,
-			EmailCreatedBy:  *email,
-			EmailUpdatedBy:  *email,
 			Attempts:        0,
 			CreatedAt:       timestamp,
+			EmailCreatedBy:  *email,
+			EmailUpdatedBy:  *email,
+			Operation:       op,
+			OperationStatus: "pendiente",
+			UUID:            uuid,
 			UpdatedAt:       timestamp,
 		}
 		r = append(r, record)
