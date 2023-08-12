@@ -2,7 +2,6 @@ package utils
 
 import (
 	"errors"
-	"fmt"
 	"strconv"
 	"time"
 
@@ -19,24 +18,18 @@ func AddMetadata(operations *[]models.Operation, email *string) ([]models.Record
 		return []models.Record{}, errors.New("operations cannot be nil")
 	}
 
-	timestamp, err := Time(func(t time.Time) any {
+	timestamp := Time(func(t time.Time) string {
 		return t.Format("2006-01-02T15:04:05")
 	})
-	if err != nil {
-		return []models.Record{}, fmt.Errorf("failed to get timestamp value: %w", err)
-	}
 
 	r := []models.Record{}
 	for _, op := range *operations {
 		uuid := uuid.NewV4().String()
-		nano, err := Time(func(t time.Time) any {
+		nano := Time(func(t time.Time) int {
 			return t.Nanosecond()
 		})
-		if err != nil {
-			return []models.Record{}, fmt.Errorf("failed to get nanosecond value: %w", err)
-		}
 
-		op.InternalNumber = "WS" + strconv.Itoa(nano.(int))
+		op.InternalNumber = "WS" + strconv.Itoa(nano)
 		record := models.Record{
 			UUID:            uuid,
 			OperationStatus: "pendiente",
@@ -44,8 +37,8 @@ func AddMetadata(operations *[]models.Operation, email *string) ([]models.Record
 			EmailCreatedBy:  *email,
 			EmailUpdatedBy:  *email,
 			Attempts:        0,
-			CreatedAt:       timestamp.(string),
-			UpdatedAt:       timestamp.(string),
+			CreatedAt:       timestamp,
+			UpdatedAt:       timestamp,
 		}
 		r = append(r, record)
 	}

@@ -1,14 +1,14 @@
 package models
 
 type Operation struct {
-	Amount             float32           `json:"amount"`
-	CreditoAccountCode string            `json:"creditor_account_code"`
-	CreditorEntityCode string            `json:"creditor_entity_code"`
-	DebtorAccountCode  string            `json:"debtor_account_code"`
-	DebtorEntityCode   string            `json:"debtor_entity_code"`
-	InternalNumber     string            `json:"internal_number,omitempty"`
-	OperationCode      string            `json:"operation_code"`
-	PaymentInstruction map[string]string `json:"payment_instruction"`
+	Amount             float64           `json:"amount"`
+	CreditoAccountCode string            `json:"creditorAccountCode"`
+	CreditorEntityCode string            `json:"creditorEntityCode"`
+	DebtorAccountCode  string            `json:"debtorAccountCode"`
+	DebtorEntityCode   string            `json:"debtorEntityCode"`
+	InternalNumber     string            `json:"internalNumber,omitempty"`
+	OperationCode      string            `json:"operationCode"`
+	PaymentInstruction map[string]string `json:"paymentInstruction"`
 }
 
 type Request struct {

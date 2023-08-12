@@ -20,15 +20,21 @@ type Transaction interface {
 }
 
 type Repository struct {
-	svc *dynamodb.DynamoDB
+	svc       *dynamodb.DynamoDB
+	semaphore chan struct{}
 }
+
+const concurrencyLimit = 5
 
 func New() Repository {
 	sess := session.Must(session.NewSessionWithOptions(session.Options{
 		SharedConfigState: session.SharedConfigEnable,
 	}))
 	svc := dynamodb.New(sess)
-	return Repository{svc}
+	return Repository{
+		svc:       svc,
+		semaphore: make(chan struct{}, concurrencyLimit),
+	}
 }
 
 func (r Repository) WriteItems(
@@ -36,7 +42,6 @@ func (r Repository) WriteItems(
 	wg *sync.WaitGroup,
 	errCh chan error,
 ) {
-	defer wg.Done()
 	const env = "TABLE_NAME"
 	tableName, exists := os.LookupEnv(env)
 	if !exists || tableName == "" {
@@ -72,23 +77,16 @@ func (r Repository) Save(operations *[]models.Operation, email *string) error {
 		return fmt.Errorf("an error has occurred while trying to add the metadata: %w", err)
 	}
 
-	const (
-		chunkSize        = 20
-		concurrencyLimit = 5
-	)
-
+	const chunkSize = 20
 	var wg sync.WaitGroup
 	opsChunk := utils.Chunk(record, chunkSize)
 	errCh := make(chan error, len(opsChunk))
-	r.WriteItems(&record, &wg, errCh)
-	flag := make(chan struct{}, concurrencyLimit)
 
 	for _, ops := range opsChunk {
-		flag <- struct{}{}
+		r.semaphore <- struct{}{}
 		wg.Add(1)
 		go func(ops []models.Record) {
 			defer func() {
-				<-flag
 				wg.Done()
 			}()
 			r.WriteItems(&ops, &wg, errCh)

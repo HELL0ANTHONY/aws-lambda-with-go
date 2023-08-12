@@ -2,14 +2,9 @@ package utils
 
 import "time"
 
-type TimeOperation func(time.Time) any
-
-func Time(t TimeOperation) (any, error) {
+func Time[T int | string](t func(time.Time) T) T {
 	now := time.Now()
-	location, err := time.LoadLocation("America/Argentina/Buenos_Aires")
-	if err != nil {
-		return nil, err
-	}
+	location, _ := time.LoadLocation("America/Argentina/Buenos_Aires")
 	timestamp := now.In(location)
-	return t(timestamp), nil
+	return t(timestamp)
 }
