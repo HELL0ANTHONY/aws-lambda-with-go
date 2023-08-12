@@ -23,9 +23,9 @@ func AddMetadata(operations *[]models.Operation, email *string) ([]models.Record
 		return t.Format("2006-01-02T15:04:05")
 	})
 
-	l := len(*operations)
-	records := make([]models.Record, 0, l)
-	for i := 0; i < l; i++ {
+	numberOfOperations := len(*operations)
+	records := make([]models.Record, 0, numberOfOperations)
+	for i := 0; i < numberOfOperations; i++ {
 		op := (*operations)[i]
 		uuid := uuid.NewV4().String()
 		nano := Time(func(t time.Time) int {
