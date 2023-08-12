@@ -26,17 +26,13 @@ func AddMetadata(operations *[]models.Operation, email *string) ([]models.Record
 	numberOfOperations := len(*operations)
 	records := make([]models.Record, 0, numberOfOperations)
 	for i := 0; i < numberOfOperations; i++ {
-		op := (*operations)[i]
 		uuid := uuid.NewV4().String()
 		nano := Time(func(t time.Time) int {
 			return t.Nanosecond()
 		})
 
-		internalNumber := "WS" + strconv.Itoa(nano)
-		op.InternalNumber = internalNumber
-		var sb strings.Builder
-		sb.WriteString(internalNumber)
-
+		op := (*operations)[i]
+		op.InternalNumber = "WS" + strconv.Itoa(nano)
 		record := models.Record{
 			Attempts:        0,
 			CreatedAt:       timestamp,
