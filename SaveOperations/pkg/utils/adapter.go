@@ -3,6 +3,7 @@ package utils
 import (
 	"errors"
 	"strconv"
+	"strings"
 	"time"
 
 	uuid "github.com/satori/go.uuid"
@@ -22,14 +23,20 @@ func AddMetadata(operations *[]models.Operation, email *string) ([]models.Record
 		return t.Format("2006-01-02T15:04:05")
 	})
 
-	r := []models.Record{}
-	for _, op := range *operations {
+	l := len(*operations)
+	records := make([]models.Record, 0, l)
+	for i := 0; i < l; i++ {
+		op := (*operations)[i]
 		uuid := uuid.NewV4().String()
 		nano := Time(func(t time.Time) int {
 			return t.Nanosecond()
 		})
 
-		op.InternalNumber = "WS" + strconv.Itoa(nano)
+		internalNumber := "WS" + strconv.Itoa(nano)
+		op.InternalNumber = internalNumber
+		var sb strings.Builder
+		sb.WriteString(internalNumber)
+
 		record := models.Record{
 			Attempts:        0,
 			CreatedAt:       timestamp,
@@ -40,8 +47,8 @@ func AddMetadata(operations *[]models.Operation, email *string) ([]models.Record
 			UUID:            uuid,
 			UpdatedAt:       timestamp,
 		}
-		r = append(r, record)
+		records = append(records, record)
 	}
 
-	return r, nil
+	return records, nil
 }
