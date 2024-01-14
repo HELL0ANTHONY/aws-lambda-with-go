@@ -2,6 +2,6 @@
 
 ### This lambda implements
 
-- conection with Dynamodb
+- connection with DynamoDB
 - Generic functions
-- Go runtine
+- Go routine
