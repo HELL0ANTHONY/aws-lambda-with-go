@@ -1,12 +1,12 @@
 package models
 
 type Record struct {
-	Attempts        int       `json:"attempts"`
-	CreatedAt       string    `json:"createdAt"`
-	EmailCreatedBy  string    `json:"emailCreatedBy"`
-	EmailUpdatedBy  string    `json:"emailUpdatedBy"`
-	Operation       Operation `json:"operation"`
-	OperationStatus string    `json:"operationStatus"`
-	UUID            string    `json:"uuid"`
-	UpdatedAt       string    `json:"updatedAt"`
+	CreatedAt       string    `json:"createdAt"       dynamodbav:"createdAt"`
+	EmailCreatedBy  string    `json:"emailCreatedBy"  dynamodbav:"emailCreatedBy"`
+	EmailUpdatedBy  string    `json:"emailUpdatedBy"  dynamodbav:"emailUpdatedBy"`
+	OperationStatus string    `json:"operationStatus" dynamodbav:"operationStatus"`
+	UUID            string    `json:"uuid"            dynamodbav:"uuid"`
+	UpdatedAt       string    `json:"updatedAt"       dynamodbav:"updatedAt"`
+	Operation       Operation `json:"operation"       dynamodbav:"operation"`
+	Attempts        int       `json:"attempts"        dynamodbav:"attempts"`
 }
