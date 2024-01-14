@@ -14,6 +14,7 @@ func AddMetadata(operations *[]models.Operation, email *string) ([]models.Record
 	if email == nil {
 		return []models.Record{}, errors.New("email cannot be nil")
 	}
+
 	if operations == nil {
 		return []models.Record{}, errors.New("operations cannot be nil")
 	}
