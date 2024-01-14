@@ -41,10 +41,10 @@ func (r Repository) WriteItems(
 	wg *sync.WaitGroup,
 	errCh chan error,
 ) {
-	const env = "TABLE_NAME"
-	tableName, exists := os.LookupEnv(env)
+	const tn = "TABLE_NAME"
+	tableName, exists := os.LookupEnv(tn)
 	if !exists || tableName == "" {
-		errCh <- fmt.Errorf("%q is not configured correctly", env)
+		errCh <- fmt.Errorf("%q is not configured correctly", tn)
 		return
 	}
 	transacItems := []*dynamodb.TransactWriteItem{}
