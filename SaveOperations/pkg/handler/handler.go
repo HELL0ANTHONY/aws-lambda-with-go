@@ -29,15 +29,15 @@ func New(p Processor) Handler {
 
 func (h Handler) Handle(
 	ctx context.Context,
-	e events.APIGatewayProxyRequest,
+	req events.APIGatewayProxyRequest,
 ) (events.APIGatewayProxyResponse, error) {
 	log.SetFlags(log.LstdFlags | log.Lshortfile)
-	slog.Info("starting", slog.String("data=%q", e.Body))
+	slog.Info("starting", slog.String("data=%q", req.Body))
 
 	lc, _ := lambdacontext.FromContext(ctx)
 	id := lc.AwsRequestID
 
-	if err := h.p.Process(e); err != nil {
+	if err := h.p.Process(req); err != nil {
 		slog.Error("it was not possible to store the data sent", slog.String("error=", err.Error()))
 		return models.ResponseError(
 			err.Error(),
