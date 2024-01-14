@@ -12,5 +12,6 @@ func main() {
 	r := repository.New()
 	p := processor.New(r)
 	h := handler.New(p)
+
 	lambda.Start(h.Handle)
 }
