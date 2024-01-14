@@ -16,7 +16,7 @@ const (
 )
 
 func CORSHeaders() map[string]string {
-	var domain string = os.Getenv("DOMAIN")
+	domain := os.Getenv("DOMAIN")
 	return map[string]string{
 		allowHeaders: "Access-Control-Allow-Origin, Access-Control-Allow-Methods, Content-Type",
 		allowMethods: "OPTIONS, POST",
