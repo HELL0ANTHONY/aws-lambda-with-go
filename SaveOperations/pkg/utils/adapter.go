@@ -3,7 +3,6 @@ package utils
 import (
 	"errors"
 	"strconv"
-	"strings"
 	"time"
 
 	uuid "github.com/satori/go.uuid"

@@ -3,10 +3,12 @@ package handler
 import (
 	"context"
 	"fmt"
+	"log"
 	"net/http"
 
 	"github.com/aws/aws-lambda-go/events"
 	"github.com/aws/aws-lambda-go/lambdacontext"
+	"golang.org/x/exp/slog"
 
 	"github.com/HELL0ANTHONY/aws-lambdas-with-golang/SaveOperations/pkg/models"
 )
@@ -29,19 +31,23 @@ func (h Handler) Handle(
 	ctx context.Context,
 	e events.APIGatewayProxyRequest,
 ) (events.APIGatewayProxyResponse, error) {
+	log.SetFlags(log.LstdFlags | log.Lshortfile)
+	slog.Info("starting", slog.String("data=%q", e.Body))
+
 	lc, _ := lambdacontext.FromContext(ctx)
-	var id string = lc.AwsRequestID
+	id := lc.AwsRequestID
+
 	if err := h.p.Process(e); err != nil {
-		// log.Printf("<start> <Handler> Received request with [%v]", req.QueryStringParameters)
+		slog.Error("it was not possible to store the data sent", slog.String("error=", err.Error()))
 		return models.ResponseError(
-			fmt.Sprintf("it was not possible to store the data sent: %s", err.Error()),
+			err.Error(),
 			id,
 		)
 	}
 
 	const message = "Successful Operation"
 	return events.APIGatewayProxyResponse{
-		Headers:    models.CORSHeaders("*"),
+		Headers:    models.CORSHeaders(),
 		StatusCode: http.StatusCreated,
 		Body: string(
 			fmt.Sprintf(`{"message": %q}`, message),

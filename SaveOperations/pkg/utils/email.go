@@ -8,12 +8,12 @@ import (
 )
 
 func Email(bearer string) (*string, error) {
-	var raw []string = strings.Split(strings.TrimSpace(bearer), " ")
+	raw := strings.Split(strings.TrimSpace(bearer), " ")
 	if len(raw) != 2 {
 		return nil, fmt.Errorf("the 'Bearer' or 'token' string is missing. Received: %q", bearer)
 	}
 
-	var tokenParts []string = strings.Split(raw[1], ".")
+	tokenParts := strings.Split(raw[1], ".")
 	if len(tokenParts) != 3 {
 		return nil, fmt.Errorf("invalid token value. Received: %q", raw[1])
 	}

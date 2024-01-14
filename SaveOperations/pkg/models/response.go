@@ -3,14 +3,10 @@ package models
 import (
 	"fmt"
 	"net/http"
+	"os"
 
 	"github.com/aws/aws-lambda-go/events"
 )
-
-type Response struct {
-	OperationID string `json:"operation_id"`
-	Message     string `json:"message"`
-}
 
 const (
 	allowHeaders = "Access-Control-Allow-Headers"
@@ -19,18 +15,19 @@ const (
 	contentType  = "Content-Type"
 )
 
-func CORSHeaders(origin string) map[string]string {
+func CORSHeaders() map[string]string {
+	var domain string = os.Getenv("DOMAIN")
 	return map[string]string{
 		allowHeaders: "Access-Control-Allow-Origin, Access-Control-Allow-Methods, Content-Type",
 		allowMethods: "OPTIONS, POST",
-		allowOrigin:  origin,
+		allowOrigin:  domain,
 		contentType:  "application/json",
 	}
 }
 
 func ResponseError(m, id string) (events.APIGatewayProxyResponse, error) {
 	return events.APIGatewayProxyResponse{
-		Headers:    CORSHeaders("*"),
+		Headers:    CORSHeaders(),
 		StatusCode: http.StatusInternalServerError,
 		Body:       string(fmt.Sprintf(`{"message": %q, "operation_id": %q}`, m, id)),
 	}, nil

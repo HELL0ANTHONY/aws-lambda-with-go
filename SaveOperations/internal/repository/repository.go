@@ -24,16 +24,15 @@ type Repository struct {
 	semaphore chan struct{}
 }
 
-const concurrencyLimit = 5
-
 func New() Repository {
 	sess := session.Must(session.NewSessionWithOptions(session.Options{
 		SharedConfigState: session.SharedConfigEnable,
 	}))
+	const concurrencyLimit = 5
 	svc := dynamodb.New(sess)
 	return Repository{
-		svc:       svc,
 		semaphore: make(chan struct{}, concurrencyLimit),
+		svc:       svc,
 	}
 }
 
@@ -77,7 +76,7 @@ func (r Repository) Save(operations *[]models.Operation, email *string) error {
 		return fmt.Errorf("an error has occurred while trying to add the metadata: %w", err)
 	}
 
-	const chunkSize = 20
+	const chunkSize = 10
 	opsChunk := utils.Chunk(record, chunkSize)
 
 	var wg sync.WaitGroup
